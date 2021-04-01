@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+git fetch
+
+branches=$(git branch -r --merged origin/v2/develop | sort \
+          | grep -E -v "v|master|develop|staging|production" \
+          | sed -E "s|^ *origin/||g")
+
+echo "$branches"
+echo
+read -p "Are you sure to delete the above on remote \"origin\" [y/Y]? " -n 1 -r reply
+echo
+
+if [[ $reply =~ ^[Yy]$ ]]
+then
+
+  for i in $branches; do
+    # deleting local if exist
+    git branch -D "$i" 2> /dev/null
+    echo "Deleting remote $i"
+    git push origin "$i" --delete
+  done
+fi
+
+git remote prune origin
